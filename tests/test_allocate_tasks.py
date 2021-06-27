@@ -73,8 +73,8 @@ class TestAllocateTasks:
         result = allocate_tasks(input_tasks, employees)
 
         assert allocated_tasks.shape == (2, 5)
-        assert non_allocated_tasks.shape == (2, 5)
-        assert result.shape == (4, 5)
+        assert non_allocated_tasks.shape == (3, 5)
+        assert result.shape == (5, 5)
 
 
 class TestGetTasks:
