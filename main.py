@@ -7,6 +7,8 @@ if __name__ == "__main__":
     employees = read_employees(employee_file_path)
     tasks = read_tasks(tasks_file_path)
 
-    allocated_tasks = allocate_tasks(employees, tasks)
+    allocated_tasks = allocate_tasks(
+        available_tasks=tasks, available_employees=employees
+    )
     allocated_tasks_path = "allocated_tasks.csv"
     save_tasks(allocated_tasks, allocated_tasks_path)

@@ -1,6 +1,6 @@
 import json
 
-from pandas import DataFrame, read_csv
+import pandas
 
 
 def read_employees(file_path: str) -> dict:
@@ -10,11 +10,11 @@ def read_employees(file_path: str) -> dict:
     return json.loads(employees_str)
 
 
-def read_tasks(file_path: str) -> DataFrame:
+def read_tasks(file_path: str) -> pandas.DataFrame:
     """Read available tasks from a file under a given path."""
-    return read_csv(file_path)
+    return pandas.read_csv(file_path)
 
 
-def save_tasks(tasks: DataFrame, file_path: str):
+def save_tasks(tasks: pandas.DataFrame, file_path: str):
     """Save allocated tasks under a given file path."""
     tasks.to_csv(file_path)
