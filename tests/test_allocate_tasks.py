@@ -16,7 +16,7 @@ def tasks():
             "type": ["engineer", "engineer"],
             "description": ["A", "B"],
             "version": ["1", "2"],
-            "user": ["Anna", "None"],
+            "user": ["Hagrid", "None"],
         }
     )
 
@@ -42,7 +42,7 @@ def allocated_tasks():
             "type": ["architect", "architect"],
             "description": ["A", "B"],
             "version": ["1", "2"],
-            "user": ["Hagrid", "Ron"],
+            "user": ["Harry Potter", "Ron Weasley"],
         }
     )
 
@@ -95,6 +95,24 @@ class TestAllocateTasks:
             _type=result.type[2],
         )
 
+    def test_fixing_mistakes_in_allocated_tasks_changes_assignment(
+        self, allocated_tasks, employees
+    ):
+        result = allocate_tasks(allocated_tasks, employees)
+        assert result.shape[0] == 2
+        self._assert_expected_task(
+            expected_user="Harry Potter",
+            expected_type="architect",
+            user=result.user[0],
+            _type=result.type[0],
+        )
+        self._assert_expected_task(
+            expected_user="Harry Potter",
+            expected_type="architect",
+            user=result.user[1],
+            _type=result.type[1],
+        )
+
     def test_returns_concatenated_results_of_non_and_allocated_tasks(
         self, allocated_tasks, non_allocated_tasks, employees
     ):
@@ -130,4 +148,4 @@ class TestGetTasks:
     def test_get_allocated_tasks_return_tasks_with_employee(self, tasks):
         filter_out_tasks = get_allocated_tasks(tasks)
         assert filter_out_tasks.shape[0] == 1
-        assert filter_out_tasks.user.values[0] == "Anna"
+        assert filter_out_tasks.user.values[0] == "Hagrid"

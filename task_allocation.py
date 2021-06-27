@@ -60,13 +60,33 @@ def _allocate_task_per_spec(
     return non_allocated_tasks
 
 
+def _fix_allocation_mistakes(
+    tasks: pandas.DataFrame, employees: dict
+) -> pandas.DataFrame:
+    """Fix allocation mistakes (specification does not match employee type) for already allocated entries."""
+    tasks_with_mistakes = []
+    for task in tasks.values:
+        task_type = task[1]
+        user = task[4]
+        employee_type = employees.get(user)
+        if employee_type != task_type:
+            tasks_with_mistakes.append(task)
+
+            # TODO: Fix allocation mistakes
+
+    return tasks
+
+
 def allocate_tasks(tasks: pandas.DataFrame, employees: dict) -> pandas.DataFrame:
     """Allocate tasks to employees."""
     final_task_allocation = pandas.DataFrame()
+    tasks_allocated_by_management = get_allocated_tasks(tasks)
     for spec_type in list(SpecTypes):
         allocated_tasks = _allocate_task_per_spec(
             tasks, employees, spec=spec_type.value
         )
         final_task_allocation = pandas.concat([allocated_tasks, final_task_allocation])
-    allocated_tasks = get_allocated_tasks(tasks)
-    return pandas.concat([final_task_allocation, allocated_tasks])
+
+    fixed_tasks = _fix_allocation_mistakes(tasks_allocated_by_management, employees)
+
+    return pandas.concat([final_task_allocation, fixed_tasks])
