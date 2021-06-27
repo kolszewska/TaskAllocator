@@ -1,7 +1,11 @@
 import pandas
 import pytest
 
-from task_allocation import get_non_allocated_tasks, get_allocated_tasks, allocate_tasks
+from task_allocation import (
+    get_non_allocated_tasks_for_spec,
+    get_allocated_tasks,
+    allocate_tasks,
+)
 
 
 @pytest.fixture
@@ -45,7 +49,7 @@ def allocated_tasks():
 
 @pytest.fixture
 def employees():
-    return {"Harry Potter": "engineer", "Ron Weasley": "architect"}
+    return {"Harry Potter": "architect", "Ron Weasley": "engineer"}
 
 
 class TestAllocateTasks:
@@ -54,17 +58,42 @@ class TestAllocateTasks:
     ):
         result = allocate_tasks(non_allocated_tasks.head(2), employees)
         assert result.shape[0] == 2
-        assert result.user[0] == "Ron Weasley"
-        assert result.user[1] == "Harry Potter"
+        self._assert_expected_task(
+            expected_user="Ron Weasley",
+            expected_type="engineer",
+            user=result.user[0],
+            _type=result.type[0],
+        )
+        self._assert_expected_task(
+            expected_user="Harry Potter",
+            expected_type="architect",
+            user=result.user[1],
+            _type=result.type[1],
+        )
 
     def test_allocate_uneven_number_of_tasks_per_employee_adds_task_to_first_employee(
         self, non_allocated_tasks, employees
     ):
         result = allocate_tasks(non_allocated_tasks, employees)
         assert result.shape[0] == 3
-        assert result.user[0] == "Ron Weasley"
-        assert result.user[1] == "Ron Weasley"
-        assert result.user[2] == "Harry Potter"
+        self._assert_expected_task(
+            expected_user="Ron Weasley",
+            expected_type="engineer",
+            user=result.user[0],
+            _type=result.type[0],
+        )
+        self._assert_expected_task(
+            expected_user="Harry Potter",
+            expected_type="architect",
+            user=result.user[1],
+            _type=result.type[1],
+        )
+        self._assert_expected_task(
+            expected_user="Harry Potter",
+            expected_type="architect",
+            user=result.user[2],
+            _type=result.type[2],
+        )
 
     def test_returns_concatenated_results_of_non_and_allocated_tasks(
         self, allocated_tasks, non_allocated_tasks, employees
@@ -76,12 +105,27 @@ class TestAllocateTasks:
         assert non_allocated_tasks.shape == (3, 5)
         assert result.shape == (5, 5)
 
+    def test_does_not_allocate_tasks_if_employee_spec_does_not_match(
+        self, non_allocated_tasks
+    ):
+        employees = {"Lord Voldemort": "evil madman"}
+        result = allocate_tasks(non_allocated_tasks, employees)
+        assert "Lord Voldemort" not in list(result.user.values)
+
+    @staticmethod
+    def _assert_expected_task(
+        expected_user: str, expected_type: str, user: str, _type: str
+    ):
+        assert user == expected_user
+        assert _type == expected_type
+
 
 class TestGetTasks:
-    def test_get_non_allocated_tasks_return_tasks_with_no_employee(self, tasks):
-        filter_out_tasks = get_non_allocated_tasks(tasks)
+    def test_get_non_allocated_tasks_return_correct_tasks(self, tasks):
+        filter_out_tasks = get_non_allocated_tasks_for_spec(tasks, spec="engineer")
         assert filter_out_tasks.shape[0] == 1
         assert filter_out_tasks.user.values[0] == "None"
+        assert filter_out_tasks.type.values[0] == "engineer"
 
     def test_get_allocated_tasks_return_tasks_with_employee(self, tasks):
         filter_out_tasks = get_allocated_tasks(tasks)
